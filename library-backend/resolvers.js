@@ -33,12 +33,15 @@ const resolvers = {
 
       return await Book.find(filter).populate('author')
     },
-    allAuthors: async () => await Author.find({}),
+    allAuthors: async () => {
+      return await Author.find({}).populate('books')
+    },
     me: async (root, args, context) => context.currentUser,
   },
   Author: {
-    bookCount: async (root) => {
-      return await Book.countDocuments({ author: root._id })
+    bookCount: (root) => {
+      const retval = root.books?.length ?? 0
+      return retval
     },
   },
   Mutation: {
@@ -58,6 +61,7 @@ const resolvers = {
         }
         const book = new Book({ ...args, author: author })
         const newBook = await book.save()
+        await Author.findOneAndUpdate({ _id: author.id }, { $push: { books: newBook.id } })
         pubsub.publish('BOOK_ADDED', { bookAdded: newBook })
         return newBook
       } catch (error) {
