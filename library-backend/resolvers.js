@@ -1,10 +1,12 @@
-const { GraphQLError } = require('graphql')
+const { GraphQLError, subscribe } = require('graphql')
+const { PubSub } = require('graphql-subscriptions')
 const jwt = require('jsonwebtoken')
 const Book = require('./models/book')
 const Author = require('./models/author')
 const User = require('./models/user')
 const { BOOK_TITLE_MIN_LENGTH, AUTHOR_NAME_MIN_LENGTH } = require('./constants')
 
+const pubsub = new PubSub()
 /*
  * English:
  * It might make more sense to associate a book with its author by storing the author's id in the context of the book instead of the author's name
@@ -55,7 +57,9 @@ const resolvers = {
           author = await author.save()
         }
         const book = new Book({ ...args, author: author })
-        return await book.save()
+        const newBook = await book.save()
+        pubsub.publish('BOOK_ADDED', { bookAdded: newBook })
+        return newBook
       } catch (error) {
         if (error.code === 11000) {
           throw new GraphQLError(`Book title must be unique: '${args.title}'`, {
@@ -156,6 +160,11 @@ const resolvers = {
       await Book.deleteMany({})
       await User.deleteMany({})
       return true
+    },
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterableIterator('BOOK_ADDED'),
     },
   },
 }

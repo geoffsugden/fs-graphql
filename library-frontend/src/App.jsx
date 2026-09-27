@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { useQuery } from '@apollo/client/react'
+import { useApolloClient, useQuery, useSubscription } from '@apollo/client/react'
+import { addBookToCache } from './utils/apolloCache'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import LoginForm from './components/LoginForm'
-import { CURRENT_USER } from './queries'
+import { CURRENT_USER, BOOK_ADDED } from './queries'
 
 const App = () => {
   const [page, setPage] = useState('authors')
@@ -12,6 +13,17 @@ const App = () => {
   const [isCreatingBook, setIsCreatingBook] = useState(false)
   const currentUser = useQuery(CURRENT_USER, {
     skip: !token,
+  })
+
+  const client = useApolloClient()
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      const book = data.data.bookAdded
+      window.alert(`Created Book ${book.title}`)
+      console.log('Book Added: ', book.title)
+      addBookToCache(client.cache, book)
+    },
   })
 
   const handleCreatingBookChange = (creatingBook) => {

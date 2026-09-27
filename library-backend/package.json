@@ -12,10 +12,17 @@
   "license": "ISC",
   "dependencies": {
     "@apollo/server": "^5.5.0",
+    "@as-integrations/express5": "^1.1.2",
+    "@graphql-tools/schema": "^10.1.1",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "graphql": "^16.13.2",
+    "graphql-subscriptions": "^3.0.0",
+    "graphql-ws": "^6.3.0",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.10.1"
+    "mongoose": "^9.10.1",
+    "ws": "^8.22.0"
   },
   "allowScripts": {
     "@apollo/protobufjs@1.2.7": true
